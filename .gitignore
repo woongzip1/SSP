@@ -1,0 +1,9 @@
+# cache
+*__pycache__/
+
+# wav and flac
+*.wav
+*.flac
+
+#
+SATEST/
