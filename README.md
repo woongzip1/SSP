@@ -1,4 +1,4 @@
-# 24-2 SSP Project
+# 24-2 Speech Signal Processing Project
 This repository contains code and resources for the 24-2 SSP project, EEE5340-01, Yonsei-University
 
 ## Directory Structure
