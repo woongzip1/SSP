@@ -5,7 +5,7 @@ from IPython.display import Audio, display
 from matplotlib import pyplot as plt
 import soundfile as sf
 
-def extract_frames(y, sr=16000, win_type='hamming', win_length=320, hop_length=160,):
+def extract_frames(y, win_type='hamming', win_length=320, hop_length=160,):
     """ 
     Extract frames identical to librosa STFT 
     ** Returns:
@@ -108,6 +108,40 @@ def stft(y, sr=16000, win_type='hamming', win_length=320, hop_length=160, n_fft=
             return spec
     else:
         return spec
+    
+def overlapadd(frames, win_length, hop_length, win_type='hann', griffin=True):
+    """ 
+    OLA process
+    input: 
+        frames: frame list with [NumFrames]
+    """
+    num_frames = len(frames)
+    siglen = win_length + (num_frames -1) * hop_length
+    y = np.zeros(siglen)
+    window_sum = np.zeros(siglen)
+    
+    try:
+        window = librosa.filters.get_window(win_type, win_length)
+    except ValueError:
+        raise ValueError("Unsupported window type!")
+    
+    for frame_idx in range(num_frames):
+        start = frame_idx * hop_length
+        frame = frames[frame_idx]
+        if griffin:
+            y[start:start + win_length] += frame * window
+            window_sum[start:start + win_length] += window ** 2
+        else:
+            y[start:start+win_length] += frame
+            window_sum[start:start+win_length] += window
+    
+    # Normalize by window overlap factor
+    y /= np.where(window_sum > 1e-10, window_sum, 1e-10)
+
+    # crop out to remove paddings (center-based STFT)
+    y = y[win_length//2:-win_length//2]
+    window_sum = window_sum[win_length//2:-win_length//2]
+    return y
 
 def istft(Y_w, win_length, hop_length, n_fft, win_type='hann'):
     """

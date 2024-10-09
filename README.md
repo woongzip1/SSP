@@ -3,10 +3,12 @@ This repository contains code and resources for the 24-2 SSP project, EEE5340-01
 
 ## Directory Structure
 - **HW2**: Contains scripts and data for homework 2.
-- **HW3**: Contains scripts and data for homework 3.
+- **HW3**: STFT&OLA, VAD, Pitch Estimation.
+- **HW4**: Linear Predictive Analysis.
 - **SATEST**: (Excluded from repository)
 
 ## Features
 - STFT (Short-Time Analysis and Synthesis)
 - VAD (Voice Activity Detection)
 - Pitch estimation using AMDF
+- Linear predictive analysis

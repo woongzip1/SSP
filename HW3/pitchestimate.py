@@ -235,7 +235,7 @@ def pitch_estimate_amdf(y, sr=16000, vad_arr=None, win_type='rectangular', win_l
             axes[i].set_ylabel('AMDF Value')
             # Highlight the minimum value on the graph
             axes[i].scatter(min_idx, min_val, color='red')
-            axes[i].text(min_idx, min_val, f'{min_val:.2f}', fontsize=10, color='red')
+            # axes[i].text(min_idx, min_val, fontsize=10, color='red')
 
         plt.tight_layout()
         plt.show()

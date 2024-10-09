@@ -112,3 +112,63 @@ def extract_frames(y, sr=16000, win_type='hamming', win_length=320, hop_length=1
         frame = frame * window
         frame_list.append(frame)
     return frame_list
+
+def VisualizeFrames(signal, sr, win_length, hop_length, frame_indices, win_type="rectangular", plot_frames=True, figsize=(10,5)):
+    """ 
+    Get input signal with frame indices, represent frames and visualize
+    Usage: VisualizeFrames(yr, sr, win_len, hop_len, 5, 20, win_type="rectangular", plot_frames=True)
+    """
+    from HW3.mystft import extract_frames
+    fig, ax = plt.subplots(figsize=figsize)
+    time = np.arange(0, len(signal) / sr, 1 / sr)
+    ax.plot(time, signal, label='waveform')
+    
+    frame_arr = extract_frames(signal, win_type=win_type, win_length=win_length, hop_length=hop_length)    
+    for index in frame_indices:
+        startind = hop_length * index
+        endind = startind + win_length
+        frame = frame_arr[index]
+        ax.plot(time[startind:endind], frame, label=f'frame {index}', linestyle='--')
+    
+    ax.set_xlabel('Time(s)', fontsize=18)
+    ax.set_ylabel('Amplitude', fontsize=14)
+    # ax.set_title('Frame indices: ' + ', '.join(map(str, frame_indices)), fontsize=16, fontweight='bold')
+    # ax.set_title('/sa/ Signal', fontsize=16, fontweight='bold')
+    ax.tick_params(axis='both', labelsize=20)
+    ax.set_xlim(0, time[-1])
+    ax.legend(fontsize=15, loc='lower left')
+    ax.grid()
+
+    # Additionaly plot frames
+    if plot_frames: 
+        num_frames = len(frame_indices)
+        num_cols = 1  
+        num_rows = num_frames  
+        
+        plt.figure(figsize=[6, num_rows * 3])  # Each row has height 3
+        frame_color = ['orange','green','red','purple'] # max number of frames to visualize
+        for i, index in enumerate(frame_indices):
+            start_time_ms = index * hop_length / sr * 1000
+            end_time_ms = start_time_ms + win_length / sr * 1000
+            time_frame_ms = np.linspace(start_time_ms, end_time_ms, win_length, endpoint=False)
+
+            plt.subplot(num_rows, num_cols, i+1)
+            frame = frame_arr[index]
+            plt.plot(time_frame_ms, frame, color=frame_color[i])
+            plt.grid()
+            plt.xlim(start_time_ms, end_time_ms)
+            plt.title(f"Frame {index}", fontsize=16)
+            # if i==0:
+            #     plt.title(f"Unvoiced Region (Frame {index})", fontsize=16, fontweight='bold')
+            # else:
+            #     plt.title(f"Voiced Region (Frame {index})", fontsize=16, fontweight='bold')
+                
+            plt.xlabel("Time (ms)", fontsize=12) 
+            plt.ylabel("Amplitude",fontsize=12)
+            plt.xticks(fontsize=12)
+            plt.yticks(fontsize=12)
+        plt.tight_layout()  
+    plt.show()
+
+
+
