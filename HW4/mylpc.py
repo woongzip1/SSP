@@ -30,7 +30,7 @@ def derbin(r, p):
         k_i = (r[i] - sumj) / E[i-1] 
         a[i][i] = k_i
 
-        ## i-order 새로운 coeff 갱신
+        ## i-order new coefficient
         for j in range(1,i):
             a[i][j] = a[i-1][j] - k_i * a[i-1][i-j]
             
@@ -38,33 +38,33 @@ def derbin(r, p):
         coeff = a[p][1:]
     return coeff,E
 
-# Derbin's Algorithm (As a reference)
-def ref_derbin(r, order):
-    # r : 1-D auto corr array
-    a = np.zeros((order+1,order+1))
-    # store prediction error for each step
-    E = np.zeros(order+1)
-    # First coeff
-    a[0][0] = 1
-    # Initial prediction error : power
-    E[0] = r[0]
+# # Derbin's Algorithm (As a reference)
+# def ref_derbin(r, order):
+#     # r : 1-D auto corr array
+#     a = np.zeros((order+1,order+1))
+#     # store prediction error for each step
+#     E = np.zeros(order+1)
+#     # First coeff
+#     a[0][0] = 1
+#     # Initial prediction error : power
+#     E[0] = r[0]
     
-    # iterate from 1 to order p 
-    for i in range(1,order+1):
-        sum_j = sum(a[i-1][j] * r[i-j] for j in range(1,i))
-        k_i = (r[i] - sum_j ) / E[i-1]
+#     # iterate from 1 to order p 
+#     for i in range(1,order+1):
+#         sum_j = sum(a[i-1][j] * r[i-j] for j in range(1,i))
+#         k_i = (r[i] - sum_j ) / E[i-1]
         
-        # Update coefficeints for current step
-        a[i][i] = k_i
-        for j in range(1,i):
-            a[i][j] = a[i-1][j] - k_i * a[i-1][i-j]
+#         # Update coefficeints for current step
+#         a[i][i] = k_i
+#         for j in range(1,i):
+#             a[i][j] = a[i-1][j] - k_i * a[i-1][i-j]
             
-        #Update Error
-        E[i] = (1-k_i**2) * E[i-1]
-        # print("i={}, ki={}".format(i,k_i))
-    # Extract final coeff, exclude a0    
-    coeff = a[order][1:]
-    return coeff,E
+#         #Update Error
+#         E[i] = (1-k_i**2) * E[i-1]
+#         # print("i={}, ki={}".format(i,k_i))
+#     # Extract final coeff, exclude a0    
+#     coeff = a[order][1:]
+#     return coeff,E
 
 
 # Calculate LPC Coefficients in the Frame: a1 a2 a3 ...
@@ -74,11 +74,7 @@ def LPC(frame, order=10):
     if len(frame) < order:
         print('frame is longer than order')
         return -1
-    # Tx = b
-    
-    # if unvoiced:
-    #     coeff, err = derbin(auto_corr(frame)/len(frame),p=order)
-    # else:
+
     coeff, err = derbin(auto_corr(frame),p=order)
     return coeff, err
 
@@ -106,25 +102,20 @@ def make_toeplitz(ac):
         toeplitz_mat[i,:] = np.concatenate((ac_flip[p-i-1:],ac[:p-i]))
     return toeplitz_mat
 
-def PlotLPCSpectrum(signal, sr, p=10, dftlen=2048, figsize=(10,6)):
+def PlotLPCSpectrum(signal, sr, p=10, dftlen=2048, figsize=(10,6), title=None):
     """
     Plot Envelope Using LP Coefficients
     input: frame(waveform), sr, p(order), dftlen, figsize
     output: None
     """
-    # signal_fft = np.fft.fft(signal)
-    # signal_fft = np.fft.rfft(signal,dftlen)[1:]
     freqs = np.linspace(0, sr/2, dftlen//2)
     signal_f = np.fft.rfft(signal, dftlen)[:-1]
 
     lp_coeff,_ = LPC(signal, order=p) #a1 a2 a3 ...
     
-    # voiced_flag, pitch = PitchDetector(signal=signal, sr=sr)
-    voiced_flag = 1
-    # if voiced_flag:
     r = auto_corr(signal)
     gain = np.sqrt(r[0] - np.sum(lp_coeff[:p] * r[1:p+1]))        
-        # gain = np.sqrt(energy / SignalEnergy(excitation)) 
+    # gain = np.sqrt(energy / SignalEnergy(excitation)) 
 
     print("gain:",gain)
     # Frequency Response
@@ -136,7 +127,10 @@ def PlotLPCSpectrum(signal, sr, p=10, dftlen=2048, figsize=(10,6)):
     plt.grid(True)
 
     plt.plot(freqs, 20 * np.log10(np.abs(h2)), linewidth=3, label='Envelope via LPC')
-    plt.title('Order : {}'.format(p), fontsize=30)
+    if title:
+        plt.title(title, fontsize=25)
+    else:
+        plt.title('Order : {}'.format(p), fontsize=30)
     plt.xlabel('Frequency (Hz)')
     plt.ylabel('Gain (dB)')
     plt.grid(True)

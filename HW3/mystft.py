@@ -126,8 +126,8 @@ def overlapadd(frames, win_length, hop_length, win_type='hann', griffin=True):
         raise ValueError("Unsupported window type!")
     
     for frame_idx in range(num_frames):
-        start = frame_idx * hop_length
-        frame = frames[frame_idx]
+        start = frame_idx * hop_length # mS
+        frame = frames[frame_idx] # m-th frame (ISTFT)
         if griffin:
             y[start:start + win_length] += frame * window
             window_sum[start:start + win_length] += window ** 2
@@ -143,7 +143,7 @@ def overlapadd(frames, win_length, hop_length, win_type='hann', griffin=True):
     window_sum = window_sum[win_length//2:-win_length//2]
     return y
 
-def istft(Y_w, win_length, hop_length, n_fft, win_type='hann'):
+def istft(Y_w, win_length, hop_length, n_fft, win_type='hann', griffin=True):
     """
     ISTFT Implementation identical to librosa.istft     
     ** Returns:
@@ -179,10 +179,12 @@ def istft(Y_w, win_length, hop_length, n_fft, win_type='hann'):
         start = frame_idx * hop_length
         frame = np.real(np.fft.ifft(Y_w[:,frame_idx]))  # Inverse FFT
         
-        # y_buffer[start:start + n_fft] += window * frame
-        # window_sum[start:start + n_fft] += window ** 2
-        y_buffer[start:start + n_fft] += frame
-        window_sum[start:start + n_fft] += window
+        if griffin:
+            y_buffer[start:start + n_fft] += window * frame
+            window_sum[start:start + n_fft] += window ** 2
+        else:
+            y_buffer[start:start + n_fft] += frame
+            window_sum[start:start + n_fft] += window
 
     # Normalize by window overlap factor
     y_buffer /= np.where(window_sum > 1e-10, window_sum, 1e-10)
@@ -191,7 +193,6 @@ def istft(Y_w, win_length, hop_length, n_fft, win_type='hann'):
     y_buffer = y_buffer[n_fft//2:-n_fft//2]
     window_sum = window_sum[n_fft//2:-n_fft//2]
     return y_buffer, window_sum
-
 
 def main():
     # Usage
